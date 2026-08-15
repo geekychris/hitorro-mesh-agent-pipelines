@@ -61,6 +61,9 @@ public final class PipelineAgent implements AutoCloseable {
     private final AtomicLong received = new AtomicLong();
 
     public PipelineAgent(String agentId, String natsUrl, SinkRegistry sinkRegistry) throws Exception {
+        if (agentId == null || agentId.isBlank()) {
+            throw new IllegalArgumentException("PipelineAgent requires hitorro.mesh.pipelines.agent-id");
+        }
         this.agentId = agentId;
         this.nats = Nats.connect(new Options.Builder().server(natsUrl).build());
         this.sinkRegistry = sinkRegistry;

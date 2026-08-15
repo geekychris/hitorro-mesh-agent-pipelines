@@ -9,8 +9,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * Spring Boot autoconfig for the agent-side pipeline executor. Activates
@@ -25,14 +25,8 @@ import org.springframework.context.annotation.Configuration;
 @AutoConfiguration
 @ConditionalOnClass(name = "io.nats.client.Nats")
 @ConditionalOnProperty(name = "hitorro.mesh.pipelines.enabled", havingValue = "true", matchIfMissing = false)
+@EnableConfigurationProperties(PipelineAgentAutoConfiguration.PipelineAgentProperties.class)
 public class PipelineAgentAutoConfiguration {
-
-    @Bean
-    @ConditionalOnMissingBean
-    @ConfigurationProperties("hitorro.mesh.pipelines")
-    public PipelineAgentProperties pipelineAgentProperties() {
-        return new PipelineAgentProperties();
-    }
 
     @Bean
     @ConditionalOnMissingBean
@@ -51,7 +45,7 @@ public class PipelineAgentAutoConfiguration {
     }
 
     /** Bound to {@code hitorro.mesh.pipelines.*}. */
-    @Configuration
+    @ConfigurationProperties("hitorro.mesh.pipelines")
     public static class PipelineAgentProperties {
         private String agentId;
         private String natsUrl;
