@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiConsumer;
 
 /**
  * Agent-side pipeline executor. Subscribes to the pipeline-dispatch
@@ -82,43 +83,73 @@ public final class PipelineAgent implements AutoCloseable {
 
     private void onMessage(byte[] payload) {
         try {
-            JsonNode env = JSON.readTree(payload);
-            String taskId        = env.get("taskId").asText();
-            String resultSubject = env.get("resultSubject").asText();
-            String nodeSpecText  = env.get("nodeSpec").asText();
-
-            NodeSpec node = extractSingleNode(nodeSpecText);
-            JobSpec wrapper = new JobSpec(taskId, "1", List.of(node));
-            JobStatus status = new JobStatus(taskId, taskId);
-
-            // Attach a NATS-publishing "row sink" alongside whatever the
-            // spec declared. Every row flows to the result subject as
-            // {"row": <json>}; EOS is a final {"eos": true}.
-            runner.run(wrapper, status);
-
-            // Publish node summary + row snapshot (bounded — big streams
-            // should use a streaming sink like nats-sink in the spec
-            // itself rather than piggybacking on the result subject).
-            var memRows = sinkRegistry.memoryTable(node.id());
-            for (JsonNode row : memRows) {
-                nats.publish(resultSubject,
-                        JSON.writeValueAsBytes(JSON.createObjectNode().set("row", row)));
-            }
-            nats.publish(resultSubject,
-                    JSON.writeValueAsBytes(JSON.createObjectNode()
-                            .put("eos", true)
-                            .put("state", status.state.name())
-                            .put("rowCount", memRows.size())));
+            handleEnvelope(payload, runner, sinkRegistry,
+                    (subject, bytes) -> nats.publish(subject, bytes));
             nats.flush(java.time.Duration.ofSeconds(2));
-
             received.incrementAndGet();
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }
     }
 
-    private NodeSpec extractSingleNode(String text) throws Exception {
-        // Accept either a bare NodeSpec YAML OR a full JobSpec YAML.
+    /**
+     * Envelope-handling separated from the NATS boundary so it can be
+     * driven from tests (or any other transport) without a running
+     * NATS server. Production callers plug {@code nats::publish} in;
+     * tests plug an in-memory queue.
+     *
+     * <p>Steps: decode envelope → parse NodeSpec text (bare or full
+     * JobSpec) → wrap in a synthetic single-node {@link JobSpec} →
+     * run via {@code runner} → drain the node's memory table to the
+     * result subject one row at a time → publish a final EOS envelope
+     * carrying {@code state} + {@code rowCount}. Row / EOS wire
+     * shape matches what {@code PipelineScheduler} expects on the
+     * consumer side.</p>
+     *
+     * @param publisher  called as {@code (subject, bytes)} for each row
+     *                   envelope and once for the trailing EOS
+     * @return the {@code taskId} parsed off the envelope — useful for
+     *         test asserts and driver-side correlation
+     */
+    static String handleEnvelope(byte[] payload,
+                                 JobRunner runner,
+                                 SinkRegistry sinkRegistry,
+                                 BiConsumer<String, byte[]> publisher) throws Exception {
+        JsonNode env = JSON.readTree(payload);
+        String taskId        = env.get("taskId").asText();
+        String resultSubject = env.get("resultSubject").asText();
+        String nodeSpecText  = env.get("nodeSpec").asText();
+
+        NodeSpec node = extractSingleNode(nodeSpecText);
+        JobSpec wrapper = new JobSpec(taskId, "1", List.of(node));
+        JobStatus status = new JobStatus(taskId, taskId);
+
+        runner.run(wrapper, status);
+
+        // Publish node summary + row snapshot (bounded — big streams
+        // should use a streaming sink like nats-sink in the spec itself
+        // rather than piggybacking on the result subject).
+        var memRows = sinkRegistry.memoryTable(node.id());
+        for (JsonNode row : memRows) {
+            publisher.accept(resultSubject,
+                    JSON.writeValueAsBytes(JSON.createObjectNode().set("row", row)));
+        }
+        publisher.accept(resultSubject,
+                JSON.writeValueAsBytes(JSON.createObjectNode()
+                        .put("eos", true)
+                        .put("state", status.state.name())
+                        .put("rowCount", memRows.size())));
+        return taskId;
+    }
+
+    /**
+     * Accept either a bare NodeSpec YAML/JSON block OR a full JobSpec
+     * document (single-node), unwrapping to the concrete {@link NodeSpec}
+     * the agent will run. Package-private so
+     * {@code PipelineAgentEnvelopeTest} can exercise both branches
+     * without going through {@link #handleEnvelope}.
+     */
+    static NodeSpec extractSingleNode(String text) throws Exception {
         String trimmed = text.trim();
         if (trimmed.startsWith("{") && trimmed.contains("\"nodes\"")
                 || trimmed.startsWith("job:")) {
