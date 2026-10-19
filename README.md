@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.png" alt="Hitorro Mesh Agent Pipelines logo" width="180">
+</p>
+
 # hitorro-mesh-agent-pipelines
 
 Agent-side executor for [hitorro-mesh-pipelines](https://github.com/geekychris/hitorro-mesh-pipelines).
