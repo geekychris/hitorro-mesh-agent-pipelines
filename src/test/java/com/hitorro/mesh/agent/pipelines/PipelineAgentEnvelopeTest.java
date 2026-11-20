@@ -3,8 +3,9 @@
  */
 package com.hitorro.mesh.agent.pipelines;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import com.hitorro.util.json.JsonMappers;
 import com.hitorro.mesh.pipelines.model.NodeSpec;
 import com.hitorro.mesh.pipelines.runtime.JobRunner;
 import com.hitorro.mesh.pipelines.sinks.SinkRegistry;
@@ -44,7 +45,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class PipelineAgentEnvelopeTest {
 
-    private static final ObjectMapper JSON = new ObjectMapper();
+    private static final ObjectMapper JSON = JsonMappers.json();
 
     @TempDir Path home;
     SinkRegistry registry;
@@ -137,12 +138,12 @@ class PipelineAgentEnvelopeTest {
 
         List<JsonNode> rowEnvelopes = publisher.rowEnvelopes();
         assertThat(rowEnvelopes).hasSize(2);
-        assertThat(rowEnvelopes).extracting(r -> r.get("row").get("name").asText())
+        assertThat(rowEnvelopes).extracting(r -> r.get("row").get("name").asString())
                 .containsExactly("apple", "cherry");
 
         JsonNode eos = publisher.eosEnvelope();
         assertThat(eos.get("eos").asBoolean()).isTrue();
-        assertThat(eos.get("state").asText()).isEqualTo("SUCCEEDED");
+        assertThat(eos.get("state").asString()).isEqualTo("SUCCEEDED");
         assertThat(eos.get("rowCount").asInt()).isEqualTo(2);
     }
 
@@ -175,7 +176,7 @@ class PipelineAgentEnvelopeTest {
         assertThat(first.get("alpha").asInt()).isEqualTo(1);
         assertThat(first.get("b").asInt()).isEqualTo(2);
         assertThat(first.has("c")).isFalse();     // dropped by project
-        assertThat(first.get("source").asText()).isEqualTo("agent");
+        assertThat(first.get("source").asString()).isEqualTo("agent");
     }
 
     @Test

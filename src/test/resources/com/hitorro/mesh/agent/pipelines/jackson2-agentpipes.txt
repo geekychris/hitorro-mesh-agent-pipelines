@@ -1,0 +1,30 @@
+envelope.bare=!IOE:jackson
+published.bare=[]
+envelope.full=t-2
+published.full=[res.2 {"row":{"name":"Alpha","pop":1500000000,"score":1.1,"ok":true,"tags":["a","b"],"n":null,"big":12345678901234567890}}, res.2 {"row":{"name":"Alpha","pop":1500000000,"score":1.1,"ok":true,"tags":["a","b"],"n":null,"big":12345678901234567890}}, res.2 {"row":{"name":"Bé/","pop":"12","score":-0.0,"ok":false,"o":{"k":31}}}, res.2 {"row":{"name":"Bé/","pop":"12","score":-0.0,"ok":false,"o":{"k":31}}}, res.2 {"eos":true,"state":"SUCCEEDED","rowCount":4}]
+envelope.json=t-3
+published.json=[res.3 {"row":{"x":1.1,"y":[1,"2",null],"z":12345678901}}, res.3 {"row":{"x":1.1,"y":[1,"2",null],"z":12345678901}}, res.3 {"eos":true,"state":"SUCCEEDED","rowCount":2}]
+envelope.failing=t-4
+published.failing=[res.4 {"eos":true,"state":"FAILED","rowCount":0}]
+envelope.noMemory=t-5
+published.noMemory=[res.5 {"row":{"a":1}}, res.5 {"eos":true,"state":"SUCCEEDED","rowCount":1}]
+envelope.numericTaskId=42
+published.numericTaskId=[res.6 {"row":{"name":"Alpha","pop":1500000000,"score":1.1,"ok":true,"tags":["a","b"],"n":null,"big":12345678901234567890,"s":1.5}}, res.6 {"row":{"name":"Alpha","pop":1500000000,"score":1.1,"ok":true,"tags":["a","b"],"n":null,"big":12345678901234567890,"s":1.5}}, res.6 {"row":{"name":"Bé/","pop":"12","score":-0.0,"ok":false,"o":{"k":31},"s":1.5}}, res.6 {"row":{"name":"Bé/","pop":"12","score":-0.0,"ok":false,"o":{"k":31},"s":1.5}}, res.6 {"eos":true,"state":"SUCCEEDED","rowCount":4}]
+envelope.objectSpec=!IOE:jackson
+published.objectSpec=[]
+envelope.missingSpec=!RTE:NullPointerException
+published.missingSpec=[]
+envelope.nullSubject=t-9
+published.nullSubject=[null {"row":{"name":"Alpha","pop":1500000000,"score":1.1,"ok":true,"tags":["a","b"],"n":null,"big":12345678901234567890,"s":1.5}}, null {"row":{"name":"Alpha","pop":1500000000,"score":1.1,"ok":true,"tags":["a","b"],"n":null,"big":12345678901234567890,"s":1.5}}, null {"row":{"name":"Bé/","pop":"12","score":-0.0,"ok":false,"o":{"k":31},"s":1.5}}, null {"row":{"name":"Bé/","pop":"12","score":-0.0,"ok":false,"o":{"k":31},"s":1.5}}, null {"eos":true,"state":"SUCCEEDED","rowCount":4}]
+envelope.trailing=t-10
+published.trailing=[res.10 {"row":{"name":"Alpha","pop":1500000000,"score":1.1,"ok":true,"tags":["a","b"],"n":null,"big":12345678901234567890,"s":1.5}}, res.10 {"row":{"name":"Alpha","pop":1500000000,"score":1.1,"ok":true,"tags":["a","b"],"n":null,"big":12345678901234567890,"s":1.5}}, res.10 {"row":{"name":"Bé/","pop":"12","score":-0.0,"ok":false,"o":{"k":31},"s":1.5}}, res.10 {"row":{"name":"Bé/","pop":"12","score":-0.0,"ok":false,"o":{"k":31},"s":1.5}}, res.10 {"eos":true,"state":"SUCCEEDED","rowCount":4}]
+envelope.malformed=!IOE:jackson
+published.malformed=[]
+envelope.emptyNodes=!RTE:IllegalArgumentException
+published.emptyNodes=[]
+extract.1454c45f=!IOE:jackson
+extract.2464fe23=NodeSpec[id=n2, partition=null, pipeline=PipelineSpec[source=Inline[rows=[{name=Alpha, pop=1500000000, score=1.1, ok=true, tags=[a, b], n=null, big=12345678901234567890}, {name=Bé/, pop=12, score=-0.0, ok=false, o={k=31}}]], steps=[], reduce=null, sinks=[MemoryTable[name=n2]]], depends=[]]
+extract.b076b2de=NodeSpec[id=n3, partition=null, pipeline=PipelineSpec[source=Inline[rows=[{x=1.1, y=[1, 2, null], z=12345678901}]], steps=[], reduce=null, sinks=[MemoryTable[name=n3]]], depends=[]]
+extract.f2f80439=!RTE:IllegalArgumentException
+extract.d8d7c672=!IOE:jackson
+extract.8e56ee4d=!IOE:jackson

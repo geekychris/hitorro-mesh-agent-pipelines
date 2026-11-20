@@ -6,7 +6,7 @@
 
     <groupId>com.hitorro</groupId>
     <artifactId>hitorro-mesh-agent-pipelines</artifactId>
-    <version>3.1.0</version>
+    <version>4.0.0</version>
     <packaging>jar</packaging>
 
     <name>hitorro-mesh-agent-pipelines</name>
@@ -102,9 +102,9 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
+                <groupId>tools.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>2.18.12</version>
+                <version>3.1.8</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -437,12 +437,12 @@
         <dependency>
             <groupId>com.hitorro</groupId>
             <artifactId>hitorro-mesh-core</artifactId>
-            <version>3.0.2</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.hitorro</groupId>
             <artifactId>hitorro-mesh-pipelines</artifactId>
-            <version>3.1.0</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>io.nats</groupId>
