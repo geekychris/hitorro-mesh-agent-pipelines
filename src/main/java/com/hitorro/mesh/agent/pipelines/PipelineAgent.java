@@ -3,8 +3,10 @@
  */
 package com.hitorro.mesh.agent.pipelines;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import com.hitorro.util.json.JsonMappers;
 import com.hitorro.mesh.pipelines.model.JobSpec;
 import com.hitorro.mesh.pipelines.model.NodeSpec;
 import com.hitorro.mesh.pipelines.parse.JobSpecYaml;
@@ -22,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
+import com.hitorro.util.json.JsonValues;
 
 /**
  * Agent-side pipeline executor. Subscribes to the pipeline-dispatch
@@ -51,7 +54,7 @@ public final class PipelineAgent implements AutoCloseable {
     public static final String PIPELINE_TASK_PREFIX = "mesh.agent.pipeline.";
     public static final String CAPABILITY           = "pipeline-node";
 
-    private static final ObjectMapper JSON = new ObjectMapper();
+    private static final ObjectMapper JSON = JsonMappers.json();
 
     private final String agentId;
     private final Connection nats;
@@ -115,10 +118,16 @@ public final class PipelineAgent implements AutoCloseable {
                                  JobRunner runner,
                                  SinkRegistry sinkRegistry,
                                  BiConsumer<String, byte[]> publisher) throws Exception {
-        JsonNode env = JSON.readTree(payload);
-        String taskId        = env.get("taskId").asText();
-        String resultSubject = env.get("resultSubject").asText();
-        String nodeSpecText  = env.get("nodeSpec").asText();
+        JsonNode env;
+        try {
+            env = JSON.readTree(payload);
+        } catch (JacksonException e) {
+            // 3.x: a malformed envelope was a JsonProcessingException, an IOException.
+            throw new java.io.IOException(e.getMessage(), e);
+        }
+        String taskId        = JsonValues.asText(env.get("taskId"));
+        String resultSubject = JsonValues.asText(env.get("resultSubject"));
+        String nodeSpecText  = JsonValues.asText(env.get("nodeSpec"));
 
         NodeSpec node = extractSingleNode(nodeSpecText);
         JobSpec wrapper = new JobSpec(taskId, "1", List.of(node));
